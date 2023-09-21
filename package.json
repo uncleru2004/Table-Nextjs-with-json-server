@@ -1,0 +1,23 @@
+{
+  "name": "new-table-next",
+  "version": "1.0.0",
+  "description": "New table with components and new logic and structure",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "serv": "json-server --watch db.json --port 3333 --delay 1500"
+  },
+  "author": "Shagrath",
+  "license": "ISC",
+  "dependencies": {
+    "json-server": "^0.17.3",
+    "next": "^13.4.19",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "swr": "^2.2.2"
+  }
+}
