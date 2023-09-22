@@ -15,6 +15,7 @@ export default function DataProcessor() {
 
   const { data, error, isLoading, isValidating, mutate } = useSWR(API, fetcher),
     //[data, setData] = useState(null),
+    [sortStr, setSortStr] = useState(null),
     [filterStr, setFilterStr] = useState(""),
     [info, setInfo] = useState(null),
     [posts, setPosts] = useState([]),
@@ -23,7 +24,7 @@ export default function DataProcessor() {
     [editedID, setEditedID] = useState(null),
     [values, setValues] = useState(columns.map(() => ""));
 
-  function filterObjects(el) {
+  function filterItems(el) {
     if (!filterStr) return true;
     return columns
       .map(({ getVal }) => getVal(el))
@@ -31,14 +32,15 @@ export default function DataProcessor() {
       .some((item) => item.toLowerCase().includes(filterStr.toLowerCase()));
   }
 
-  function sortItems(btn, head) {
-    let direction = btn === "sortUp" ? 1 : -1;
+  function sortItems(a, b) {
+    if (!sortStr) return 1;
+    console.log(sortStr);
+    const [btn, head] = sortStr;
+    const direction = btn === "sortUp" ? 1 : -1;
 
-    setData(
-      data
-        .sort((a, b) => (a[head] > b[head] ? direction : direction * -1))
-        .map((item) => item)
-    );
+    return toString(a[head]).localeCompare(toString(b[head])) > 0
+      ? direction
+      : direction * -1;
   }
 
   async function onClick(event) {
@@ -107,14 +109,6 @@ export default function DataProcessor() {
         revalidate: false,
       });
 
-    // if (event.target.id === "delUser") {
-    //   setData(data.filter((item) => item.id != tr.id));
-    //   const result = fetch(API + tr.id, {
-    //     method: "DELETE",
-    //   });
-    //   setOpenDialogUserID(null);
-    //   setOpenDialogPosts(null);
-    // }
     if (event.target.id !== "delUser" && event.target.tagName === "TD") {
       setOpenDialogUserID(tr.id);
       setOpenDialogPosts(null);
@@ -124,7 +118,7 @@ export default function DataProcessor() {
     }
     if (event.target.id === "sortUp" || event.target.id === "sortDown") {
       const th = event.target.closest("th");
-      sortItems(event.target.id, th.id.toLowerCase());
+      setSortStr([event.target.id, th.id.toLowerCase()]);
 
       setOpenDialogUserID(null);
       setOpenDialogPosts(null);
@@ -142,29 +136,6 @@ export default function DataProcessor() {
       setEditedID(null);
       setValues(columns.map(() => ""));
     }
-    //   if (event.target.id === "ok") {
-    //     if (editedID) {
-    //       const ind = data.findIndex(
-    //         (obj) => String(obj.id) === String(editedID)
-    //       );
-    //       const newObj = data[ind];
-    //       columns.forEach(({ setVal }, index) =>
-    //         Object.assign(newObj, setVal?.(values[index]))
-    //       );
-    //       setData((old) => old.with(ind, newObj));
-    //     } else {
-    //       const newObj = {
-    //         id: Math.max(...data.map((item) => +item.id)) + 1,
-    //         address: {},
-    //       };
-    //       columns.forEach(({ setVal }, index) =>
-    //         Object.assign(newObj, setVal?.(values[index]))
-    //       );
-    //       setData(data.concat(newObj));
-    //     }
-    //     setEditedID(null);
-    //     setValues(columns.map(() => ""));
-    //   }
   }
 
   return (
@@ -183,7 +154,7 @@ export default function DataProcessor() {
       {error && <>Error {error.toString()}</>}
       {data && (
         <Table
-          data={data?.filter(filterObjects)}
+          data={data?.filter(filterItems)?.toSorted(sortItems)}
           columns={columns}
           editedID={editedID}
         >
@@ -216,7 +187,7 @@ export default function DataProcessor() {
             </Dialog>
           ) : (
             <Dialog class_name="popupPost">
-              <p style={{fontSize: "xxx-large"}}>Нет данных</p>
+              <p style={{ fontSize: "xxx-large" }}>Нет данных</p>
               <button id="btnClosePosts" className="buttonClose">
                 ❌
               </button>
